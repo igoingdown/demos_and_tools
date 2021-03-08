@@ -6,7 +6,6 @@ This is a project I would like to share with you about the tools I wrote for eve
 
 ## Project structure
 ``` bash
-├── README.md
 ├── demos
 │   ├── class-access
 │   │   └── test.py
@@ -30,6 +29,11 @@ This is a project I would like to share with you about the tools I wrote for eve
 │   └── tqdm
 │       └── test.py
 └── tools
+    ├── bbs_crawler
+    │   ├── __init__.py
+    │   ├── common.py
+    │   ├── main.py
+    │   └── post.py
     ├── bupt-network
     │   └── login.py
     ├── calculate_heat
@@ -44,8 +48,6 @@ This is a project I would like to share with you about the tools I wrote for eve
     │   ├── show.cpp
     │   └── show.sh
     ├── income_calculator
-    │   ├── __pycache__
-    │   │   └── const.cpython-38.pyc
     │   ├── calculate.py
     │   └── const.py
     ├── lucky-dogs
