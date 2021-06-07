@@ -71,8 +71,8 @@ test these packages with a demo before using it in any real project.
 * tools: Includes the common tools used in development, like crawler tools and image related tools.
 
 ## Personal Info
-<div align="center">
-    <img src="./doc/imgs/wechat.jpeg" width="100">
-</div>
 
+* 微信
+![IMG](/docs/images/wechat.png)
 
+* 邮箱: **Zhao Mingxing** - *[zhaomingxingdl@gmail.com](mailto:zhaomingxingdl@gmail.com)* 
