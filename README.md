@@ -6,64 +6,22 @@ This is a project I would like to share with you about the tools I wrote for eve
 
 ## Project structure
 ``` bash
-├── demos
-│   ├── class-access
-│   │   └── test.py
-│   ├── collections
-│   │   └── test.py
-│   ├── gensim
-│   │   ├── test.py
-│   │   ├── weibo_texts
-│   │   │   └── test.txt
-│   │   └── word2vec.py
-│   ├── json
-│   │   └── json.py
-│   ├── lda
-│   │   └── test.py
-│   ├── outside-callers
-│   │   └── shell
-│   │       ├── call.py
-│   │       └── test.sh
-│   ├── pdb
-│   │   └── test.py
-│   └── tqdm
-│       └── test.py
+├── demos  // some boring demos
 └── tools
-    ├── bbs_crawler
-    │   ├── __init__.py
-    │   ├── common.py
-    │   ├── main.py
-    │   └── post.py
-    ├── bupt-network
-    │   └── login.py
-    ├── calculate_heat
-    │   └── test.py
-    ├── crawler
-    │   └── crawl.py
-    ├── gpa-caculator
-    │   ├── caculator.py
-    │   └── scores.xlsx
-    ├── image-tools
-    │   ├── combine.py
-    │   ├── show.cpp
-    │   └── show.sh
-    ├── income_calculator
-    │   ├── calculate.py
-    │   └── const.py
-    ├── lucky-dogs
-    │   └── choose.py
-    ├── process-tools
-    │   ├── get_particular_python_process_pids.py
-    │   └── kill_processes.sh
-    ├── read_file
-    │   ├── __init__.py
-    │   └── test.py
-    ├── sys_path_check
-    │   └── main.py
-    └── time_tools
-        ├── now_time.py
-        ├── time2stamp.py
-        └── timestamp.py
+    ├── bbs_crawler   // bbs.byr.cn 爬虫
+    ├── bupt-network  // bupt 网关登录工具
+    ├── calculate_heat // 热度计算工具
+    ├── crawler        // 站点小爬虫
+    ├── file_tools     // 文件相关工具
+    ├── gpa-caculator  // gpa 计算器
+    ├── image-tools    // 图片工具
+    │   └── combine.py // 图片拼接工具
+    ├── income_calculator  // 个税计算器工具
+    ├── lucky-dogs      // 抓阄工具
+    ├── process-tools   // 进程管理工具
+    ├── read_file       // 文件相关工具
+    ├── sys_path_check  
+    └── time_tools      // 时间工具
 ```
 
 * demos: Includes prime examples for some common packages like gensim and lda. I would like to 
@@ -72,10 +30,25 @@ test these packages with a demo before using it in any real project.
 
 ## Personal Info
 
-* 微信
+#### 微信
 
 
 
 ![IMG](/docs/images/wechat.png)
 
-* 邮箱: **Zhao Mingxing** - *[zhaomingxingdl@gmail.com](mailto:zhaomingxingdl@gmail.com)* 
+
+
+#### 微信公众号
+
+
+
+![IMG](/docs/images/001-minglangwanwu.png)
+
+
+
+#### 邮箱
+
+**Zhao Mingxing** - *[zhaomingxingdl@gmail.com](mailto:zhaomingxingdl@gmail.com)* 
+
+
+
