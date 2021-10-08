@@ -2,9 +2,9 @@ import os
 from PIL import Image
 
 HOME = os.environ['HOME']
-IMAGES_PATH = HOME + '/Desktop/images'  # 图片集地址
+IMAGES_PATH = HOME + '/Desktop/images/tmp'  # 图片集地址
 IMAGES_FORMAT = ['.png', '.jpeg', '.jpg']  # 图片格式
-IMAGE_BASE_WIDTH_SIZE = 800  # 每张图片的宽度
+IMAGE_BASE_WIDTH_SIZE = 6240  # 每张图片的宽度
 IMAGE_SAVE_PATH = HOME + '/Desktop/merged'  # 图片转换后的地址
 
 
@@ -25,6 +25,7 @@ def unify_image_width(base_width, file_names):
     for name in file_names:
         im = Image.open(os.path.join(IMAGES_PATH, name))
         w, h = im.size
+        print(name, w, h)
         wpercent = (base_width/float(w))
         new_h = int(h * wpercent)
         h_sum += new_h
