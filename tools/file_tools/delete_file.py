@@ -14,11 +14,12 @@ import shutil
 def delete_output(work_dir):
     for parent, dir_names, _ in os.walk(work_dir, followlinks=False):
         for dir_name in dir_names:
+            dest_path = os.path.join(parent, dir_name)
             if dir_name == "output":
-                print(os.path.join(parent, dir_name))
-                shutil.rmtree(os.path.join(parent, dir_name))
+                print(dest_path)
+                shutil.rmtree(dest_path)
                 continue
-            delete_output(os.path.join(parent, dir_name))
+            delete_output(dest_path)
 
 
 if __name__ == "__main__":
