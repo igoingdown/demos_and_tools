@@ -1,0 +1,12 @@
+image_path:
+  dest: "/Users/zhaomingxing/Desktop/merged.jpeg"
+  source: "/Users/zhaomingxing/Desktop/images/tmp"
+image_formats:
+  - '.png'
+  - '.jpg'
+  - '.jpeg'
+image_size:
+  width: 5144
+  hight: 20
+image_padding:
+  width: 10
