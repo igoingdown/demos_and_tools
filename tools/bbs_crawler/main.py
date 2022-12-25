@@ -43,6 +43,9 @@ def __find_xsz(posts):
 
 def infinite_monitor():
     while True:
+        if get_part_of_day() != "night":
+            time.sleep(get_rand_int(100, 1000))
+            continue
         top10_posts = __crawl_top_ten()
         if __find_xsz(top10_posts):
             print(datetime.datetime.now(), "ok")
@@ -52,8 +55,26 @@ def infinite_monitor():
             time.sleep(get_rand_int(20, 50))
             post_bytedance_lightning_referral()
             '''
-        time.sleep(get_rand_int(300, 360))
+        time.sleep(get_rand_int(100, 1000))
 
+
+def get_part_of_day():
+    h = datetime.datetime.now().hour
+    return (
+        "morning"
+        if 5 <= h <= 11
+        else "afternoon"
+        if 12 <= h <= 21
+        else "evening"
+        if 22 <= h <= 23
+        else "night"
+    )
+
+
+# To use current hour:
+# from datetime import datetime
+# part =
+# print(f"Have a good {part}!")
 
 if __name__ == '__main__':
     infinite_monitor()
