@@ -1,1 +1,1 @@
-15 0 * * * python3 $HOME/github/python_demo_and_tool/tools/bbs_crawler/login.py && /bin/date >> $HOME/github/python_demo_and_tool/tools/bbs_crawler/time.txt
+0 0 * * * /usr/local/bin/python3 $HOME/github/python_demo_and_tool/tools/bbs_crawler/login.py >> $HOME/github/python_demo_and_tool/tools/bbs_crawler/time.txt 2>&1
