@@ -1,12 +1,12 @@
 image_path:
-  dest: "/Users/zhaomingxing/Desktop/merged.jpeg"
-  source: "/Users/zhaomingxing/Desktop/images/tmp"
+  dest: "/Users/bytedance/Desktop/merged.jpeg"
+  source: "/Users/bytedance/Desktop/001-images/tmp"
 image_formats:
   - '.png'
   - '.jpg'
   - '.jpeg'
 image_size:
-  width: 5144
-  hight: 20
+  width: 1920
+  hight: 1080
 image_padding:
   width: 10

@@ -9,9 +9,9 @@ desc:   计算新个税下的个人收入。
 
 from tools.income_calculator.const import *
 
+
 def find_tax_range(before_tax_income_sum):
     for k, v in salary_tax_rate_dict.items():
-        pass
         if before_tax_income_sum > k:
             continue
         return v
@@ -144,9 +144,10 @@ class Calculator(object):
         # TODO: 把税收结果画成曲线图
         pass
 
+
 if __name__ == "__main__":
-    raw_salary_list = [23217, 22917, 23067, 22917, 22917, 22917, 27346, 24397, 21292]
-    registered_insurance_base_list = [20416, 20416, 20416, 20416, 20416, 20416, 22745, 22745, 22745]
+    raw_salary_list = [38206, 34505, 34900, 34596, 85020, 38119, 65840, 34710, 34500, 34500 + 7000, 38000, 38000+67000]
+    registered_insurance_base_list = [28221, 28221, 28221, 28221, 28221, 28221, 31884, 31884, 31884, 31884, 31884, 31884]
     special_expense_deduction_list = [{"base_fee":1500, "is_salary":True, "valid_months":[i + 1 for i in range(8)]}]
 
     c = Calculator(raw_salary_list,

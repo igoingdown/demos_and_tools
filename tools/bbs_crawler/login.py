@@ -1,34 +1,34 @@
 import time
+import sys
+import getopt
 
 from common import get_rand_int
 import requests
 
 
-def _login(session):
-    url = "https://bbs.byr.cn/"
-    payload = {}
+def _login(session, user_name, pwd):
+    url = "https://bbs.byr.cn/user/ajax_login.json"
+    payload = "id={}&passwd={}&mode=0&CookieDate=0".format(user_name, pwd)
     headers = {
         'authority': 'bbs.byr.cn',
-        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-        'accept-language': 'zh-CN,zh;q=0.9',
+        'accept': 'application/json, text/javascript, */*; q=0.01',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'cache-control': 'no-cache',
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'origin': 'https://bbs.byr.cn',
+        'pragma': 'no-cache',
         'referer': 'https://bbs.byr.cn/index',
         'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108", "Google Chrome";v="108"',
         'sec-ch-ua-mobile': '?0',
         'sec-ch-ua-platform': '"macOS"',
-        'sec-fetch-dest': 'document',
-        'sec-fetch-mode': 'navigate',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
         'sec-fetch-site': 'same-origin',
-        'sec-fetch-user': '?1',
-        'upgrade-insecure-requests': '1',
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+        'x-requested-with': 'XMLHttpRequest'
     }
-    resp = session.get(url, headers=headers, data=payload)
-    print("-"*100)
-    print(session.cookies)
-    print("-"*100)
-    print(resp.text)
-    print("-"*100)
-    print(resp.headers)
+    response = session.post(url, headers=headers, data=payload)
+    print(response.text)
 
 
 def _logout(session):
@@ -57,8 +57,8 @@ def _logout(session):
     print(session.cookies)
 
 
-def my_favor(session):
-    url = "https://bbs.byr.cn/favor/ajax_list.json?uid=fycjmingxing&root=list-favor"
+def my_favor(session, user_name):
+    url = "https://bbs.byr.cn/favor/ajax_list.json?uid={}&root=list-favor".format(user_name)
     payload = {}
     headers = {
         'authority': 'bbs.byr.cn',
@@ -83,8 +83,8 @@ def my_favor(session):
     print(session.cookies)
 
 
-def open_parttime_job(session):
-    url = "https://bbs.byr.cn/board/ParttimeJob?_uid=fycjmingxing"
+def open_parttime_job(session, user_name):
+    url = "https://bbs.byr.cn/board/ParttimeJob?_uid={}".format(user_name)
     payload = {}
     headers = {
         'authority': 'bbs.byr.cn',
@@ -108,8 +108,8 @@ def open_parttime_job(session):
     print("-"*100)
     print(session.cookies)
 
-def open_anxianlianghua_page(session):
-    url = "https://bbs.byr.cn/article/ParttimeJob/919307?_uid=fycjmingxing"
+def open_anxianlianghua_page(session, user_name):
+    url = "https://bbs.byr.cn/article/ParttimeJob/919307?_uid={}".format(user_name)
 
     payload = {}
     headers = {
@@ -165,8 +165,8 @@ def anxianlianghua_reply(session):
     print(session.cookies)
 
 
-def open_weiguanboyi_page(session):
-    url = "https://bbs.byr.cn/article/ParttimeJob/918956?_uid=fycjmingxing"
+def open_weiguanboyi_page(session, user_name):
+    url = "https://bbs.byr.cn/article/ParttimeJob/918956?_uid={}".format(user_name)
     payload = {}
     headers = {
         'authority': 'bbs.byr.cn',
@@ -219,8 +219,8 @@ def weiguanboyi_reply(session):
     print(session.cookies)
 
 
-def open_bytedance_page(session):
-    url = "https://bbs.byr.cn/article/ParttimeJob/918954?_uid=fycjmingxing"
+def open_bytedance_page(session, user_name):
+    url = "https://bbs.byr.cn/article/ParttimeJob/918954?_uid={}".format(user_name)
     payload = {}
     headers = {
         'authority': 'bbs.byr.cn',
@@ -273,8 +273,8 @@ def bytedance_reply(session):
     print(session.cookies)
 
 
-def open_ms_page(session):
-    url = "https://bbs.byr.cn/article/ParttimeJob/918955?_uid=fycjmingxing"
+def open_ms_page(session, user_name):
+    url = "https://bbs.byr.cn/article/ParttimeJob/918955?_uid={}".format(user_name)
     payload = {}
     headers = {
         'authority': 'bbs.byr.cn',
@@ -328,33 +328,55 @@ def ms_reply(session):
     print(session.cookies)
 
 
-if __name__ == '__main__':
+def auto_send_comment(user_name, pwd):
     time.sleep(get_rand_int(1, 60))
     s = requests.session()
-    s.cookies.set("login-user", "fycjmingxing", domain=".bbs.byr.cn", path="/")
-    s.cookies.set("nforum[UTMPUSERID]", "fycjmingxing", domain=".bbs.byr.cn", path="/")
-    s.cookies.set("nforum[PASSWORD]", "EfB0Gy0o6IeuhB5MLcOD0Q%3D%3D", domain=".bbs.byr.cn", path="/")
-    _login(s)
+    _login(s, user_name, pwd)
     time.sleep(get_rand_int(12, 60))
-    my_favor(s)
+    my_favor(s, user_name)
     time.sleep(get_rand_int(8, 60))
     s.cookies.set("nforum-left", "010", domain=".bbs.byr.cn", path="/")
-    open_parttime_job(s)
+    open_parttime_job(s, user_name)
     time.sleep(get_rand_int(5, 60))
-    open_anxianlianghua_page(s)
+    open_anxianlianghua_page(s, user_name)
     time.sleep(get_rand_int(5, 60))
     anxianlianghua_reply(s)
     time.sleep(get_rand_int(35, 60))
-    open_weiguanboyi_page(s)
+    open_weiguanboyi_page(s, user_name)
     time.sleep(get_rand_int(5, 60))
     weiguanboyi_reply(s)
     time.sleep(get_rand_int(38, 60))
-    open_bytedance_page(s)
+    open_bytedance_page(s, user_name)
     time.sleep(get_rand_int(5, 60))
     bytedance_reply(s)
     time.sleep(get_rand_int(38, 60))
-    open_ms_page(s)
+    open_ms_page(s, user_name)
     time.sleep(get_rand_int(5, 60))
     ms_reply(s)
     time.sleep(get_rand_int(30, 60))
     _logout(s)
+
+
+def parse_params():
+    user_name, pwd = "", ""
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv, "u:p:",
+                                   ["user_name=", "pwd="])  # 长选项模式
+    except:
+        print("Error")
+        return user_name, pwd
+
+    for opt, arg in opts:
+        if opt in ['-u', '--user_name']:
+            user_name = arg
+        elif opt in ['-p', '--pwd']:
+            pwd = arg
+    return user_name, pwd
+
+
+if __name__ == '__main__':
+    user_name, pwd = parse_params()
+    print(user_name, pwd)
+    auto_send_comment(user_name, pwd)
+    # auto_send_comment("hzplszl", "lslhcqy")
