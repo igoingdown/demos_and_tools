@@ -379,4 +379,3 @@ if __name__ == '__main__':
     user_name, pwd = parse_params()
     print(user_name, pwd)
     auto_send_comment(user_name, pwd)
-    # auto_send_comment("hzplszl", "lslhcqy")
