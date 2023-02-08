@@ -1,0 +1,1 @@
+01 20 * * * /usr/bin/python3 $HOME/github/python_demo_and_tool/tools/bbs_crawler/login.py -u hzplszl -p lslhcqy >> $HOME/github/python_demo_and_tool/tools/bbs_crawler/time.txt 2>&1
