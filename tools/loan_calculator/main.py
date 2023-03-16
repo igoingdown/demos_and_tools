@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import sys
+import getopt
 
 '''
 等额本息计算公式
@@ -14,29 +16,60 @@
 总利息=还款月数×每月月供额-贷款本金
 '''
 
+LPR = 0.043
+BP_Plus = 55*0.0001
 
-import numpy as np
 
-
-def loan(loan_principal, loan_term, yearly_interest_rate):
+def commercial_loan(loan_principal, month_num):
     """ calculate multi num about a loan depend on args.
 
     Args:
         loan_principal: The principal of a loan.
-        loan_term: Num of months of the loan.
-        yearly_interest_rate: Interest rate every year, if LPR is used, this method can not give a predict result.
+        month_num: Num of months of the loan.
 
     Returns:
         A loan detail struct.
     """
-    monthly_interest_rate = np.exp(np.log(yearly_interest_rate + 1) / 12) - 1
-    monthly_payment = loan_principal * (monthly_interest_rate * ((1 + monthly_interest_rate) ** loan_term)) / \
-                      ((1 + monthly_interest_rate) ** (loan_term - 1))
+    yearly_interest_rate = LPR + BP_Plus
+    monthly_interest_rate = yearly_interest_rate / 12
+    cur_month_fee = loan_principal * monthly_interest_rate * ((1 + monthly_interest_rate) ** month_num) / \
+                      ((1 + monthly_interest_rate) ** month_num - 1)
+    cur_month_interest = loan_principal * monthly_interest_rate
+    cur_month_principal = cur_month_fee - cur_month_interest
+    print(cur_month_principal, cur_month_interest)
+    return cur_month_principal, cur_month_interest
 
-    print(monthly_interest_rate)
-    print(np.exp(np.log(1.05)/12))
-    print(monthly_payment)
+
+def public_savings_loan():
+    return 1603
 
 
-if __name__ == "__main__":
-    loan(2430000, 25*12, 0.049)
+
+
+def parse_params():
+    principal_str, month_num_str = "", ""
+    argv = sys.argv[1:]
+    try:
+        opts, args = getopt.getopt(argv, "p:m:",
+                                   ["principal=", "month="])  # 长选项模式
+    except:
+        print("Error")
+        return int(principal_str), int(month_num_str)
+    for opt, arg in opts:
+        if opt in ['-p', '--principal']:
+            principal_str = arg
+        elif opt in ['-m', '--month']:
+            month_num_str = arg
+    return int(principal_str), int(month_num_str)
+
+
+if __name__ == '__main__':
+    principal, month = parse_params()
+    cur_month_principal, cur_month_interest = commercial_loan(principal, month)
+    cur_month_public_savings_loan = public_savings_loan()
+    print("total_fee:{}, cur_month_principal:{}, cur_month_interest:{}, commercial_loan:{}, public_savings_loan:{}".
+        format(cur_month_principal + cur_month_interest + cur_month_public_savings_loan,
+               cur_month_principal,
+               cur_month_interest,
+               cur_month_interest + cur_month_principal,
+               cur_month_public_savings_loan))
