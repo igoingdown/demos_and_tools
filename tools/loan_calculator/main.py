@@ -36,7 +36,7 @@ def commercial_loan(loan_principal, month_num):
                       ((1 + monthly_interest_rate) ** month_num - 1)
     cur_month_interest = loan_principal * monthly_interest_rate
     cur_month_principal = cur_month_fee - cur_month_interest
-    print(cur_month_principal, cur_month_interest)
+    print(month_num, cur_month_principal, cur_month_interest)
     return cur_month_principal, cur_month_interest
 
 
@@ -44,6 +44,11 @@ def public_savings_loan():
     return 1603
 
 
+def print_plan(principal, month):
+    while month > 0:
+        cur_month_principal, cur_month_interest = commercial_loan(principal, month)
+        month -= 1
+        principal -= cur_month_principal
 
 
 def parse_params():
@@ -73,3 +78,4 @@ if __name__ == '__main__':
                cur_month_interest,
                cur_month_interest + cur_month_principal,
                cur_month_public_savings_loan))
+    print_plan(principal, month)
