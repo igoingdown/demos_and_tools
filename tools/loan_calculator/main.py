@@ -68,14 +68,18 @@ def parse_params():
     return int(principal_str), int(month_num_str)
 
 
-if __name__ == '__main__':
+def main():
     principal, month = parse_params()
     cur_month_principal, cur_month_interest = commercial_loan(principal, month)
     cur_month_public_savings_loan = public_savings_loan()
     print("total_fee:{}, cur_month_principal:{}, cur_month_interest:{}, commercial_loan:{}, public_savings_loan:{}".
-        format(cur_month_principal + cur_month_interest + cur_month_public_savings_loan,
-               cur_month_principal,
-               cur_month_interest,
-               cur_month_interest + cur_month_principal,
-               cur_month_public_savings_loan))
+          format(cur_month_principal + cur_month_interest + cur_month_public_savings_loan,
+                 cur_month_principal,
+                 cur_month_interest,
+                 cur_month_interest + cur_month_principal,
+                 cur_month_public_savings_loan))
     print_plan(principal, month)
+
+
+if __name__ == '__main__':
+    main()
