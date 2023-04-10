@@ -37,7 +37,7 @@ def commercial_loan(loan_principal, month_num):
                       ((1 + monthly_interest_rate) ** month_num - 1)
     cur_month_interest = loan_principal * monthly_interest_rate
     cur_month_principal = cur_month_fee - cur_month_interest
-    print(month_num, cur_month_principal, cur_month_interest)
+    # print(month_num, cur_month_principal, cur_month_interest)
     return cur_month_principal, cur_month_interest
 
 
