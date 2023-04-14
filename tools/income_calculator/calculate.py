@@ -8,6 +8,23 @@ desc:   计算新个税下的个人收入。
 """
 
 from tools.income_calculator.const import *
+from tools.write_csv import write_csv
+
+result_header = [
+    "month",
+    "总税前收入",
+    "养老保险个人部分总计",
+    "失业保险个人部分总计",
+    "医疗保险个人部分总计",
+    "住房公积金个人部分总计",
+    "专项附加扣除总计",
+    "免税额度总计",
+    "总应税收入",
+    "税率",
+    "总纳税额",
+    "总税后收入",
+]
+result = []
 
 
 def find_tax_range(before_tax_income_sum):
@@ -78,9 +95,11 @@ class Calculator(object):
         assert len(self.raw_salary_list) == len(self.registered_insurance_base_list)
 
         # 三险一金
-        self.unemployment_insurance = SpecialDeduction(UNEMPLOYMENT_INSURANCE_RATE, MIN_BASE_UNEMPLOYMENT_INSURANCE, MAX_BASE_UNEMPLOYMENT_INSURANCE)
+        self.unemployment_insurance = SpecialDeduction(UNEMPLOYMENT_INSURANCE_RATE, MIN_BASE_UNEMPLOYMENT_INSURANCE,
+                                                       MAX_BASE_UNEMPLOYMENT_INSURANCE)
         self.pension = SpecialDeduction(PENSION_RATE, MIN_BASE_PENSION_INSURANCE, MAX_BASE_PENSION_INSURANCE)
-        self.medical_insurance = SpecialDeduction(MEDICAL_INSURANCE_RATE, MIN_BASE_MEDICAL_INSURANCE, MAX_BASE_MEDICAL_INSURANCE)
+        self.medical_insurance = SpecialDeduction(MEDICAL_INSURANCE_RATE, MIN_BASE_MEDICAL_INSURANCE,
+                                                  MAX_BASE_MEDICAL_INSURANCE, fee_base=BASE_FEE_MEDICAL)
         self.housing_fund = SpecialDeduction(HOUSING_FUND_RATE, MIN_BASE_HOUSING_FUND, MAX_BASE_HOUSING_FUND)
 
         self.housing_fund_needed = housing_fund_needed
@@ -90,55 +109,92 @@ class Calculator(object):
 
         # 专项附加扣除
         self.special_expense_deduction_list = []
-        if special_expense_deduction_list != None:
+        if special_expense_deduction_list is not None:
             for item in special_expense_deduction_list:
-                self.special_expense_deduction_list.append(SpecialExpenseDeduction(item["base_fee"], item["is_salary"], item["valid_months"]))
+                self.special_expense_deduction_list.append(
+                    SpecialExpenseDeduction(item["base_fee"], item["is_salary"], item["valid_months"]))
 
     '''
     calculate_tax_sum 计算税费总数
     '''
-    def calculate_tax_sum(self, cur_month):
-        before_tax_income_sum = sum(self.raw_salary_list[:cur_month])
 
+    def calculate_tax_sum(self, cur_month):
+        result_item = [cur_month]
+        before_tax_income_sum = sum(self.raw_salary_list[:cur_month])
+        result_item.append(before_tax_income_sum)
+
+        pension_fee = 0
         if self.pension_needed:
-            before_tax_income_sum -= sum([self.pension.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            pension_fee += sum([self.pension.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            before_tax_income_sum -= pension_fee
+        result_item.append(pension_fee)
+
+        unemployment_insurance_fee = 0
         if self.unemployment_insurance_needed:
-            before_tax_income_sum -= sum([self.unemployment_insurance.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            unemployment_insurance_fee += sum([self.unemployment_insurance.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            before_tax_income_sum -= unemployment_insurance_fee
+        result_item.append(unemployment_insurance_fee)
+
+        medical_insurance_fee = 0
         if self.medical_insurance_needed:
-            before_tax_income_sum -= sum([self.medical_insurance.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            medical_insurance_fee += sum(
+                [self.medical_insurance.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            before_tax_income_sum -= medical_insurance_fee
+        result_item.append(medical_insurance_fee)
+
+        housing_fund_fee = 0
         if self.housing_fund_needed:
-            before_tax_income_sum -= sum([self.housing_fund.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            housing_fund_fee += sum(
+                [self.housing_fund.get_fee(x) for x in self.registered_insurance_base_list[:cur_month]])
+            before_tax_income_sum -= housing_fund_fee
+        result_item.append(housing_fund_fee)
 
         after_tax_income_sum = before_tax_income_sum
+
+        special_deduction_sum = 0
         for special_expense_deduction in self.special_expense_deduction_list:
             deduction_value = sum([special_expense_deduction.get_fee(x + 1) for x in range(cur_month)])
+            special_deduction_sum += deduction_value
 
             before_tax_income_sum -= deduction_value
             if not special_expense_deduction.is_salary:
                 after_tax_income_sum -= deduction_value
+        result_item.append(special_deduction_sum)
 
-        before_tax_income_sum -= base_tax_free_salary * cur_month
+        tax_free_sum = base_tax_free_salary * cur_month
+        before_tax_income_sum -= tax_free_sum
+        result_item.append(tax_free_sum)
 
+        result_item.append(before_tax_income_sum)
         # 查dict，找出税率和速算扣除数
         rate, reduce_num = find_tax_range(before_tax_income_sum)
+        result_item.append(rate)
         tax_sum = before_tax_income_sum * rate - reduce_num
+        result_item.append(tax_sum)
 
         # 计算税后总收入
         after_tax_income_sum -= tax_sum
-
+        result_item.append(after_tax_income_sum)
+        global result
+        result.append(result_item)
         return int(tax_sum), int(after_tax_income_sum)
 
     '''
     calculate_every_month_salary: 给定税前收入列表，输出每月税后收入和个税
     '''
+
     def calculate_every_month_salary(self):
         cur_tax_sum = 0
         cur_after_tax_income_sum = 0
         for i in range(len(self.raw_salary_list)):
             tax_sum, after_tax_income_sum = self.calculate_tax_sum(i + 1)
-            print("{0}月缴税{1}￥, 税后收入{2}￥, 累计收入{3}￥ ".format(i + 1, tax_sum - cur_tax_sum, after_tax_income_sum - cur_after_tax_income_sum, after_tax_income_sum))
+            print("{0}月缴税{1}￥, 税后收入{2}￥, 累计收入{3}￥ ".format(i + 1, tax_sum - cur_tax_sum,
+                                                           after_tax_income_sum - cur_after_tax_income_sum,
+                                                           after_tax_income_sum))
+
             cur_tax_sum = tax_sum
             cur_after_tax_income_sum = after_tax_income_sum
+        write_csv("income.csv", result_header, result)
 
     def print_tax_curve(self):
         # TODO: 把税收结果画成曲线图
@@ -146,13 +202,15 @@ class Calculator(object):
 
 
 if __name__ == "__main__":
-    raw_salary_list = [38206, 34505, 34900, 34596, 85020, 38119, 65840, 34710, 34500, 34500 + 7000, 38000, 38000+67000]
-    registered_insurance_base_list = [28221, 28221, 28221, 28221, 28221, 28221, 31884, 31884, 31884, 31884, 31884, 31884]
-    special_expense_deduction_list = [{"base_fee":1500, "is_salary":True, "valid_months":[i + 1 for i in range(8)]}]
+    raw_salary_list = [38000 + 3688 + 3356+4.42, 38000+4.81, 38000+7.59, 38000+5, 38000 + 150*1065.11, 38000, 38000, 38000, 38000, 38000, 38000,
+                       38000]
+    registered_insurance_base_list = [31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884,
+                                      31884]
+    special_expense_deduction_list = [{"base_fee": 1500, "is_salary": True, "valid_months": [i + 1 for i in range(12)]}]
 
     c = Calculator(raw_salary_list,
                    registered_insurance_base_list,
-                   unemployment_insurance_needed=False,
-                   medical_insurance_needed=False,
+                   unemployment_insurance_needed=True,
+                   medical_insurance_needed=True,
                    special_expense_deduction_list=special_expense_deduction_list)
     c.calculate_every_month_salary()
