@@ -9,6 +9,7 @@ desc:   计算新个税下的个人收入。
 
 from tools.income_calculator.const import *
 from tools.write_csv import write_csv
+import argparse
 
 result_header = [
     "month",
@@ -201,7 +202,35 @@ class Calculator(object):
         pass
 
 
+def float_list(string):
+    try:
+        values = [float(x) for x in string.split(',')]
+        return values
+    except ValueError:
+        raise argparse.ArgumentTypeError("Invalid float value")
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--my_list', type=float_list, nargs=12, default=[100.0] * 12, help='Input float list')
+    args = parser.parse_args()
+    return args
+
+def parse_params():
+    parser = argparse.ArgumentParser(description="脚本描述信息")
+    # 添加参数
+    parser.add_argument('-r','--raw', type=float_list, default=[10000.0] * 12, help='raw income list')
+    parser.add_argument("-b", "--base_num", type=float_list, default=[31884.0] * 12, help='base bum list')
+    parser.add_argument("-f", "--base_fee", type=float_list, default=[1500.0] * 12, help='base fee list')
+    parser.add_argument("-s", "--is_salary", type=float_list, default=[1500.0] * 12, help='base fee list')
+    parser.add_argument("-r", "--rate", help="5 年期贷款LPR", type=float, default=0.043)
+    parser.add_argument("-b", "--base_point", help="额外加息 BP", type=float, default=0.0055)
+    return parser.parse_args()
+
 if __name__ == "__main__":
+
+
+
+
     raw_salary_list = [38000 + 3688 + 3356+4.42, 38000+4.81, 38000+7.59, 38000+5, 38000 + 150*1065.11, 38000, 38000, 38000, 38000, 38000, 38000,
                        38000]
     registered_insurance_base_list = [31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884,
