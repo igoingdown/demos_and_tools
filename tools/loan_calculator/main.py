@@ -43,26 +43,30 @@ def commercial_loan(loan_principal, month_num, lpr, bp_plus):
 def format_money(num):
     return round(num, 2)
 
-def public_savings_loan():
-    return 1603
+def public_savings_loan(use_public_saving_loan):
+    if use_public_saving_loan:
+        return 1603
+    else:
+        return 0
 
 
-def get_loan_pay_plan(principal, month,lpr, bp_plus):
-    cur_month_public_savings_loan = public_savings_loan()
+def get_loan_pay_plan(principal, total_month,lpr, bp_plus, use_public_saving_loan):
+    cur_month_public_savings_loan = public_savings_loan(use_public_saving_loan)
     plan = []
     plan_header = ["month", "cur_month_total_fee", "cur_month_principal", "cur_month_interest",
                    "cur_month_commercial_loan", "cur_month_public_savings_loan",
                    "origin_principal", "left_loan_principal"]
     plan.append(plan_header)
-    while month > 0:
-        cur_month_principal, cur_month_interest = commercial_loan(principal, month, lpr, bp_plus)
+    cur_month = total_month
+    while cur_month > 0:
+        cur_month_principal, cur_month_interest = commercial_loan(principal, total_month, lpr, bp_plus)
         origin_principal = principal
-        month -= 1
+        cur_month -= 1
         principal -= cur_month_principal
         left_loan_principal = principal
         cur_total_debt = cur_month_interest + cur_month_principal+cur_month_public_savings_loan
         cur_total_commercial_debt = cur_month_interest + cur_month_principal
-        plan.append([300-month,
+        plan.append([total_month-cur_month,
                      format_money(cur_total_debt),
                      format_money(cur_month_principal),
                      format_money(cur_month_interest),
@@ -80,6 +84,7 @@ def parse_params():
     parser.add_argument("-m", "--month", help="还款月数", type=int, default=300)
     parser.add_argument("-r", "--rate", help="5 年期贷款LPR", type=float, default=0.043)
     parser.add_argument("-b", "--base_point", help="额外加息 BP", type=float, default=0.0055)
+    parser.add_argument('-f', '--forced_savings_loan', action='store_true', help='是否使用公积金贷款')
     return parser.parse_args()
 
 
@@ -92,16 +97,16 @@ def write_csv(data):
 
 def main():
     args = parse_params()
-    loan_principal, month_num, lpr, bp_plus = args.principal, args.month, args.rate,args.base_point
+    loan_principal, month_num, lpr, bp_plus, use_public_saving_loan = args.principal, args.month, args.rate,args.base_point, args.forced_savings_loan
     cur_month_principal, cur_month_interest = commercial_loan(loan_principal, month_num, lpr, bp_plus)
-    cur_month_public_savings_loan = public_savings_loan()
+    cur_month_public_savings_loan = public_savings_loan(use_public_saving_loan)
     print("total_fee:{}, cur_month_principal:{}, cur_month_interest:{}, commercial_loan:{}, public_savings_loan:{}".
           format(cur_month_principal + cur_month_interest + cur_month_public_savings_loan,
                  cur_month_principal,
                  cur_month_interest,
                  cur_month_interest + cur_month_principal,
                  cur_month_public_savings_loan))
-    plan = get_loan_pay_plan(loan_principal, month_num, lpr, bp_plus)
+    plan = get_loan_pay_plan(loan_principal, month_num, lpr, bp_plus, use_public_saving_loan)
     write_csv(plan)
 
 
