@@ -108,6 +108,33 @@ def open_parttime_job(session, user_name):
     print("-"*100)
     print(session.cookies)
 
+
+def open_byr_bbs_page(session, user_name, board_name, page_id):
+    url = "https://bbs.byr.cn/article/{}/{}?_uid={}".format(board_name, page_id, user_name)
+    payload = {}
+    headers = {
+        'authority': 'bbs.byr.cn',
+        'accept': '*/*',
+        'accept-language': 'zh-CN,zh;q=0.9',
+        'referer': 'https://bbs.byr.cn/',
+        'sec-ch-ua': '"Not?A_Brand";v="8", "Chromium";v="108", "Google Chrome";v="108"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+        'x-requested-with': 'XMLHttpRequest'
+    }
+    response = session.get(url, headers=headers, data=payload)
+    print("-" * 100)
+    print(response.text)
+    print("-" * 100)
+    print(response.headers)
+    print("-" * 100)
+    print(session.cookies)
+
+
 def open_anxianlianghua_page(session, user_name):
     url = "https://bbs.byr.cn/article/ParttimeJob/919307?_uid={}".format(user_name)
 

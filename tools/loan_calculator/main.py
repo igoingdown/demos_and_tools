@@ -80,9 +80,9 @@ def get_loan_pay_plan(principal, total_month,lpr, bp_plus, use_public_saving_loa
 def parse_params():
     parser = argparse.ArgumentParser(description="脚本描述信息")
     # 添加参数
-    parser.add_argument("-p", "--principal", help="贷款总金额", type=int, default=4000000)
-    parser.add_argument("-m", "--month", help="还款月数", type=int, default=300)
-    parser.add_argument("-r", "--rate", help="5 年期贷款LPR", type=float, default=0.043)
+    parser.add_argument("-p", "--principal", help="贷款总金额", type=int, default=3500000)
+    parser.add_argument("-m", "--month", help="还款月数", type=int, default=12*20)
+    parser.add_argument("-r", "--rate", help="5 年期贷款LPR", type=float, default=0.0395)
     parser.add_argument("-b", "--base_point", help="额外加息 BP", type=float, default=0.0055)
     parser.add_argument('-f', '--forced_savings_loan', action='store_true', help='是否使用公积金贷款')
     return parser.parse_args()
