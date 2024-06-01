@@ -22,7 +22,7 @@ tell application "Notes"
         set noteTitle to the name of currentNote
         set noteContent to the body of currentNote
         set cleanContent to my removeHTMLTags(noteContent)
-        log "正文：" & cleanContent 
+        log "标题:" & noteTitle & "正文：" & cleanContent 
     end repeat
 end tell
 
