@@ -227,14 +227,8 @@ def parse_params():
     return parser.parse_args()
 
 if __name__ == "__main__":
-
-
-
-
-    raw_salary_list = [38000 + 3688 + 3356+4.42, 38000+4.81, 38000+7.59, 38000+5, 38000 + 150*1065.11, 38000, 38000, 38000, 38000, 38000, 38000,
-                       38000]
-    registered_insurance_base_list = [31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884, 31884,
-                                      31884]
+    raw_salary_list = [52000] * 12
+    registered_insurance_base_list = [35000] * 12
     special_expense_deduction_list = [{"base_fee": 1500, "is_salary": True, "valid_months": [i + 1 for i in range(12)]}]
 
     c = Calculator(raw_salary_list,

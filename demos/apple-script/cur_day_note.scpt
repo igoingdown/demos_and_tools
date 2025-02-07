@@ -14,9 +14,11 @@ set formattedDateString to currentYear & "." & currentMonth  & "." & currentDay 
 -- 设置备忘录标题
 set noteTitle to formattedDateString
 
+set noteBody to "最重要的事" & return & "业务"& return & "技术"& return & "管理"& return & "稳定性"
+
 
 -- 创建备忘录
 tell application "Notes"
     activate
-    set newNote to make new note with properties {name:noteTitle, body:""}
+    set newNote to make new note with properties {name:noteTitle, body:noteBody}
 end tell
