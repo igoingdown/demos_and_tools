@@ -14,7 +14,7 @@ set formattedDateString to currentYear & "." & currentMonth  & "." & currentDay 
 -- 设置备忘录标题
 set noteTitle to formattedDateString
 
-set noteBody to "最重要的事" & return & "业务"& return & "技术"& return & "管理"& return & "稳定性"
+set noteBody to ""
 
 
 -- 创建备忘录
