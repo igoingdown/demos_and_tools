@@ -6,3 +6,5 @@ output/
 .idea
 tree.txt
 *.csv
+*.coverage
+*.png
