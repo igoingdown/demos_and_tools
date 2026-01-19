@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.timer.service</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/bytedance/github/python_demo_and_tool/tools/sec_kill/.venv/bin/python3</string>
+        <string>/Users/bytedance/github/python_demo_and_tool/tools/sec_kill/main.py</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/bytedance/github/python_demo_and_tool/tools/sec_kill/timer_service.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/bytedance/github/python_demo_and_tool/tools/sec_kill/timer_service_error.log</string>
+</dict>
+</plist>

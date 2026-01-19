@@ -1,0 +1,12 @@
+Pillow
+beautifulsoup4
+gensim
+jieba
+lda
+matplotlib
+numpy
+requests
+tqdm
+xlrd
+PyYAML
+zstd

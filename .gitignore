@@ -8,3 +8,6 @@ tree.txt
 *.csv
 *.coverage
 *.png
+venv/
+*.log
+*log/

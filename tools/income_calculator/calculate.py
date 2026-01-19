@@ -7,19 +7,27 @@ desc:   计算新个税下的个人收入。
 ===============================================================================
 """
 
-from tools.income_calculator.const import *
-from tools.write_csv import write_csv
 import argparse
-import matplotlib.pyplot as plt
+import csv
+import os
+import sys
 from typing import List, Tuple, Dict, Any
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'Microsoft YaHei']
-plt.rcParams['axes.unicode_minus'] = False
+# 尝试导入，支持模块运行和直接脚本运行
+try:
+    from tools.income_calculator.config_loader import load_config
+    from tools.income_calculator.utils import write_csv, set_chinese_font
+except ImportError:
+    # 如果直接运行脚本，可能找不到 tools 包，尝试添加项目根目录到 sys.path
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(current_dir))
+    if project_root not in sys.path:
+        sys.path.insert(0, project_root)
+    from tools.income_calculator.config_loader import load_config
+    from tools.income_calculator.utils import write_csv, set_chinese_font
 
 # 常量定义
-BASE_TAX_FREE_SALARY = 5000  # 每月基本免税额度
 DEFAULT_MONTHS = 12  # 默认计算月数
 
 result_header = [
@@ -37,26 +45,10 @@ result_header = [
     "总税后收入",
 ]
 
-def find_tax_range(before_tax_income_sum: float) -> Tuple[float, float]:
-    """
-    根据累计收入查找对应的税率和速算扣除数
-    
-    Args:
-        before_tax_income_sum: 累计税前收入
-        
-    Returns:
-        Tuple[float, float]: (税率, 速算扣除数)
-    """
-    for k, v in salary_tax_rate_dict.items():
-        if before_tax_income_sum > k:
-            continue
-        return v
-    return salary_tax_rate_dict[max(salary_tax_rate_dict.keys())]
-
 class SpecialDeduction:
     """专项扣除基类（三险一金）"""
     
-    def __init__(self, rate: float, min_base: float, max_base: float, fee_base: float = BASE_FEE_DEFAULT):
+    def __init__(self, rate: float, min_base: float, max_base: float, fee_base: float = 0):
         """
         初始化专项扣除
         
@@ -118,6 +110,7 @@ class Calculator:
     """个税计算器"""
     
     def __init__(self,
+                 config: Dict[str, Any],
                  raw_salary_list: List[float],
                  registered_insurance_base_list: List[float],
                  housing_fund_needed: bool = True,
@@ -129,6 +122,7 @@ class Calculator:
         初始化计算器
         
         Args:
+            config: 配置字典
             raw_salary_list: 税前收入列表
             registered_insurance_base_list: 社保基数列表
             housing_fund_needed: 是否需要计算公积金
@@ -137,9 +131,10 @@ class Calculator:
             medical_insurance_needed: 是否需要计算医疗保险
             special_expense_deduction_list: 专项附加扣除列表
         """
-        print(len(raw_salary_list), len(registered_insurance_base_list))
-        if len(raw_salary_list) != len(registered_insurance_base_list):
-            raise ValueError("税前收入列表和社保基数列表长度必须相同")
+        self.config = config
+        
+        # 数据校验
+        self._validate_input(raw_salary_list, registered_insurance_base_list)
 
         self.raw_salary_list = raw_salary_list
         self.registered_insurance_base_list = registered_insurance_base_list
@@ -147,25 +142,25 @@ class Calculator:
 
         # 初始化三险一金计算器
         self.unemployment_insurance = SpecialDeduction(
-            UNEMPLOYMENT_INSURANCE_RATE,
-            MIN_BASE_UNEMPLOYMENT_INSURANCE,
-            MAX_BASE_UNEMPLOYMENT_INSURANCE
+            config['unemployment']['rate'],
+            config['unemployment']['min'],
+            config['unemployment']['max']
         )
         self.pension = SpecialDeduction(
-            PENSION_RATE,
-            MIN_BASE_PENSION_INSURANCE,
-            MAX_BASE_PENSION_INSURANCE
+            config['pension']['rate'],
+            config['pension']['min'],
+            config['pension']['max']
         )
         self.medical_insurance = SpecialDeduction(
-            MEDICAL_INSURANCE_RATE,
-            MIN_BASE_MEDICAL_INSURANCE,
-            MAX_BASE_MEDICAL_INSURANCE,
-            fee_base=BASE_FEE_MEDICAL
+            config['medical']['rate'],
+            config['medical']['min'],
+            config['medical']['max'],
+            fee_base=config['medical'].get('base_fee', 0)
         )
         self.housing_fund = SpecialDeduction(
-            HOUSING_FUND_RATE,
-            MIN_BASE_HOUSING_FUND,
-            MAX_BASE_HOUSING_FUND
+            config['housing_fund']['rate'],
+            config['housing_fund']['min'],
+            config['housing_fund']['max']
         )
 
         self.housing_fund_needed = housing_fund_needed
@@ -185,16 +180,33 @@ class Calculator:
                     )
                 )
 
-    def calculate_tax_sum(self, cur_month: int) -> Tuple[int, int]:
-        """
-        计算累计税费
+    def _validate_input(self, raw_salary: List[float], insurance_base: List[float]):
+        """校验输入数据"""
+        if len(raw_salary) != len(insurance_base):
+            raise ValueError(f"税前收入列表长度({len(raw_salary)})和社保基数列表长度({len(insurance_base)})必须相同")
         
-        Args:
-            cur_month: 当前月份
-            
-        Returns:
-            Tuple[int, int]: (累计税费, 累计税后收入)
-        """
+        for val in raw_salary:
+            if val < 0:
+                raise ValueError(f"税前收入不能为负数: {val}")
+                
+        for val in insurance_base:
+            if val < 0:
+                raise ValueError(f"社保基数不能为负数: {val}")
+
+    def _find_tax_range(self, before_tax_income_sum: float) -> Tuple[float, float]:
+        """根据累计收入查找对应的税率和速算扣除数"""
+        tax_rates = self.config['tax_rates']
+        # 假设 tax_rates 是按 limit 排序的，且最后一个 limit 是 None (无限大)
+        for item in tax_rates:
+            limit = item['limit']
+            if limit is not None and before_tax_income_sum <= limit:
+                return item['rate'], item['deduction']
+            if limit is None: # 最后一个兜底
+                return item['rate'], item['deduction']
+        return 0.45, 181920 # Fallback
+
+    def calculate_tax_sum(self, cur_month: int) -> Tuple[int, int]:
+        """计算累计税费"""
         result_item = [cur_month]
         before_tax_income_sum = sum(self.raw_salary_list[:cur_month])
         result_item.append(before_tax_income_sum)
@@ -229,16 +241,18 @@ class Calculator:
         result_item.append(special_deduction_sum)
 
         # 计算免税额度
-        tax_free_sum = BASE_TAX_FREE_SALARY * cur_month
+        tax_free_sum = self.config['tax_threshold'] * cur_month
         before_tax_income_sum -= tax_free_sum
         result_item.append(tax_free_sum)
 
         result_item.append(before_tax_income_sum)
         
         # 计算税率和税费
-        rate, reduce_num = find_tax_range(before_tax_income_sum)
+        rate, reduce_num = self._find_tax_range(before_tax_income_sum)
         result_item.append(rate)
         tax_sum = before_tax_income_sum * rate - reduce_num
+        # 税费不能小于0
+        tax_sum = max(0, tax_sum)
         result_item.append(tax_sum)
 
         # 计算税后收入
@@ -252,6 +266,10 @@ class Calculator:
         """计算每月工资"""
         cur_tax_sum = 0
         cur_after_tax_income_sum = 0
+        
+        # 清空之前的结果，防止多次调用叠加
+        self.result = []
+        
         for i in range(len(self.raw_salary_list)):
             # 计算当月社保明细
             month = i + 1
@@ -285,7 +303,10 @@ class Calculator:
         write_csv("income.csv", result_header, self.result)
 
     def print_tax_curve(self) -> None:
-        """绘制税收曲线图，包含累计/月度纳税额和税后收入"""
+        """绘制税收曲线图"""
+        # 设置中文字体
+        set_chinese_font()
+        
         months = [item[0] for item in self.result]
         tax_amounts = [item[10] for item in self.result]  # 总纳税额
         monthly_tax = [tax_amounts[i] - (tax_amounts[i-1] if i > 0 else 0) for i in range(len(tax_amounts))]
@@ -319,52 +340,95 @@ class Calculator:
         plt.close()
 
 def float_list(string: str) -> List[float]:
-    """
-    将逗号分隔的字符串转换为浮点数列表
-    
-    Args:
-        string: 逗号分隔的字符串
-        
-    Returns:
-        List[float]: 浮点数列表
-    """
     try:
         return [float(x) for x in string.split(',')]
     except ValueError:
         raise argparse.ArgumentTypeError("Invalid float value")
 
-def parse_args() -> argparse.Namespace:
-    """
-    解析命令行参数
+def parse_csv_file(file_path: str) -> Tuple[List[float], List[float], List[float]]:
+    """读取 CSV 文件获取收入数据"""
+    raw_salary = []
+    base = []
+    special_deduction = []
     
-    Returns:
-        argparse.Namespace: 解析后的参数
-    """
+    with open(file_path, 'r', encoding='utf-8-sig') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            raw_salary.append(float(row.get('RawSalary', 0)))
+            base.append(float(row.get('InsuranceBase', 0)))
+            special_deduction.append(float(row.get('SpecialDeduction', 0)))
+            
+    return raw_salary, base, special_deduction
+
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="个人所得税计算器")
-    parser.add_argument('--raw', type=float_list, default=[58000.0, 58000.0,58000.0,58000.0,
-                                                           58000.0, 58000.0, 58000.0, 58000.0, 
-                                                           58000.0, 58000.0, 58000.0, 58000.0],
-                      help='税前收入列表，用逗号分隔')
-    parser.add_argument('--base', type=float_list, default=[35283.0] * DEFAULT_MONTHS,
-                      help='社保基数列表，用逗号分隔')
-    parser.add_argument('--special_deduction', type=float_list, default=[0] * DEFAULT_MONTHS,
-                      help='专项附加扣除列表，用逗号分隔')
+    parser.add_argument('--config', type=str, help='配置文件路径 (JSON)')
+    parser.add_argument('--file', type=str, help='输入数据 CSV 文件路径 (包含 RawSalary, InsuranceBase, SpecialDeduction 列)')
+    
+    parser.add_argument('--raw', type=float_list, 
+                      default=[58000.0] * DEFAULT_MONTHS,
+                      help='税前收入列表，用逗号分隔 (当不使用 --file 时生效)')
+    parser.add_argument('--base', type=float_list, 
+                      default=[35283.0] * DEFAULT_MONTHS,
+                      help='社保基数列表，用逗号分隔 (当不使用 --file 时生效)')
+    parser.add_argument('--special_deduction', type=float_list, 
+                      default=[0] * DEFAULT_MONTHS,
+                      help='专项附加扣除列表，用逗号分隔 (当不使用 --file 时生效)')
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
-    special_expense_deduction_list = [{
-        "base_fee": args.special_deduction[0],
-        "is_salary": True,
-        "valid_months": list(range(1, len(args.raw) + 1))
-    }]
+    
+    # 加载配置
+    config = load_config(args.config)
+    
+    # 准备数据
+    if args.file:
+        try:
+            raw_salary, base, special_deduction_vals = parse_csv_file(args.file)
+            print(f"Loaded {len(raw_salary)} records from {args.file}")
+        except Exception as e:
+            print(f"Error reading CSV file: {e}")
+            sys.exit(1)
+    else:
+        raw_salary = args.raw
+        base = args.base
+        special_deduction_vals = args.special_deduction
 
-    calculator = Calculator(
-        args.raw,
-        args.base,
-        unemployment_insurance_needed=True,
-        medical_insurance_needed=True,
-        special_expense_deduction_list=special_expense_deduction_list
-    )
-    calculator.calculate_every_month_salary()
-    calculator.print_tax_curve()
+    # 构造专项附加扣除列表
+    # 注意：这里的逻辑是将输入的 deduction 值应用到所有月份，或者如果输入是列表，则对应月份
+    # 为了简化，这里假设 special_deduction_vals 每个元素对应一个月的扣除额
+    # 但 Calculator 接收的是 "special_expense_deduction_list" (项目列表)，每个项目有 valid_months
+    # 我们需要构建一个单一的 "通用扣除项"，它的每个月费用可能不同。
+    # 遗憾的是 SpecialExpenseDeduction 类设计是 "fixed base_fee for valid_months".
+    # 如果每个月不一样，我们需要创建 12 个 Deduction item，或者修改 SpecialExpenseDeduction 逻辑。
+    # 为了兼容旧逻辑（旧逻辑是 args.special_deduction[0] * 12），我们看看：
+    # 旧代码: "base_fee": args.special_deduction[0], "valid_months": range(1, len+1)
+    # 这意味着旧代码其实只支持每个月扣一样的钱。
+    # 既然我们要支持 CSV 导入每月的不同扣除，我们需要改进 SpecialExpenseDeduction 或者创建多个。
+    # 让我们创建 12 个 SpecialExpenseDeduction，每个只对当月有效。
+    
+    special_expense_deduction_list = []
+    for i, fee in enumerate(special_deduction_vals):
+        if fee > 0:
+            special_expense_deduction_list.append({
+                "base_fee": fee,
+                "is_salary": True,
+                "valid_months": [i + 1] # 只对第 i+1 个月有效
+            })
+
+    try:
+        calculator = Calculator(
+            config,
+            raw_salary,
+            base,
+            unemployment_insurance_needed=True,
+            medical_insurance_needed=True,
+            special_expense_deduction_list=special_expense_deduction_list
+        )
+        calculator.calculate_every_month_salary()
+        calculator.print_tax_curve()
+        print("\nCalculation completed. Results saved to income.csv and tax_curve.png")
+    except Exception as e:
+        print(f"Error during calculation: {e}")
+        # import traceback; traceback.print_exc()

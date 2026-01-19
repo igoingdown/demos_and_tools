@@ -4,8 +4,13 @@
 ===============================================================================
 author: 赵明星
 desc:   计算新个税下的个人收入所需的常量列表。
+WARNING: 此文件已弃用 (Deprecated)。新的配置系统使用 default_config.json 和 config_loader.py。
+请勿在新代码中引用此文件。
 ===============================================================================
 """
+
+# DEPRECATED: Use config_loader.py instead
+
 
 # MIN_BASE_PENSION_INSURANCE 养老保险的缴纳基数下限
 MIN_BASE_PENSION_INSURANCE = 3613
