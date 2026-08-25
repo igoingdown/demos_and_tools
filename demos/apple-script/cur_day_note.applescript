@@ -1,12 +1,17 @@
 -- 每天生成一篇当天的备忘录；周日/月末/年末额外生成对应的总结备忘录。
 -- 内容均为空，模板后续迭代。
 
+-- 幂等：已存在同名备忘录则跳过。重复执行（含 cron 失败后重试）不会产生重复条目，
+-- 周日/月末这种一次多篇的情况下，也只补齐缺失的那几篇。
 set noteBody to ""
 
 tell application "Notes"
 	activate
 	repeat with noteTitle in my titlesFor(current date)
-		make new note with properties {name:noteTitle as string, body:noteBody}
+		set t to noteTitle as string
+		if (count (every note whose name is t)) is 0 then
+			make new note with properties {name:t, body:noteBody}
+		end if
 	end repeat
 end tell
 
